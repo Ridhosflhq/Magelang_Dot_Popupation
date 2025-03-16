@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Peta Dot Populasi</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    #map {
+      height: 100vh;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  // Inisialisasi peta
+  var map = L.map('map').setView([-7.479, 110.217], 12); // Atur koordinat dan zoom level
+
+  // Tambahkan layer peta dasar dari OpenStreetMap
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  }).addTo(map);
+
+  // Fungsi untuk menentukan gaya titik populasi
+  function pointStyle(feature) {
+    return {
+      radius: 3, // Ukuran titik
+      fillColor: 'red', // Warna titik
+      color: '#000',
+      weight: 0.5,
+      opacity: 1,
+      fillOpacity: 0.8
+    };
+  }
+
+  // Tambahkan data GeoJSON ke peta
+  fetch('Kepadatan.geojson') // Ubah 'data.geojson' sesuai nama file GeoJSON kamu
+    .then(response => response.json())
+    .then(data => {
+      L.geoJSON(data, {
+        pointToLayer: function(feature, latlng) {
+          return L.circleMarker(latlng, pointStyle(feature));
+        },
+        onEachFeature: function(feature, layer) {
+          if (feature.properties) {
+            layer.bindPopup(
+              `<b>Lokasi:</b> ${feature.properties.name || 'Tidak tersedia'}<br>
+               <b>Populasi:</b> ${feature.properties.population || 'Tidak tersedia'}`
+            );
+          }
+        }
+      }).addTo(map);
+    })
+    .catch(error => console.error('Error loading GeoJSON:', error));
+</script>
+
+</body>
+</html>
